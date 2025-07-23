@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>File Preview 存储桶</title>
+    <link rel="icon" href="../logo.png" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://torrindex.net/static/normalize.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://torrindex.net/static/tpb.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style>
+      body {
+        background: white;
+        font-family: system-ui, sans-serif;
+        color: #000;
+        text-align: center;
+      }
+
+      .table-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+      }
+
+      table {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid black;
+        padding: 5px;
+        text-align: left;
+      }
+
+      img.icon {
+        height: 14px;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+
+      a.download-link {
+        color: #0066cc;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      a.download-link:hover {
+        text-decoration: underline;
+      }
+
+      .copy-icon {
+        height: 14px;
+        vertical-align: middle;
+        cursor: pointer;
+      }
+
+      .copied {
+        font-size: 12px;
+        color: green;
+        margin-left: 8px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section>
+      <img src="../logo.png" style="width: 20%" />
+    </section>
+
+    <div class="table-container">
+      <table border="1" cellpadding="5" id="previewTable">
+        <thead>
+          <tr>
+            <th colspan="2">File Preview</th>
+          </tr>
+        </thead>
+        <tbody id="previewBody">
+          <tr>
+            <td colspan="2">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const typeIcons = {
+        Audio: "../../icons/type/audio.png",
+        Video: "../../icons/type/video.png",
+        Zip: "../../icons/type/zip.png",
+        Text: "../../icons/type/text.png",
+        Image: "../../icons/type/photo.png",
+        Document: "../../icons/type/document.png",
+      };
+
+      const statusIcons = {
+        Active: "../../icons/status/active.png",
+        Restricted: "../../icons/status/restricted.png",
+        Unsafe: "../../icons/status/unsafe.png",
+        Unscanned: "../../icons/status/unscanned.png",
+      };
+
+      const actionIcons = {
+        Copy: "../../icons/action/copy.png",
+        Info: "../../icons/action/info.png",
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const filename = params.get("f");
+      const previewBody = document.getElementById("previewBody");
+
+      if (!filename) {
+        previewBody.innerHTML = "<tr><td colspan='2'>Invalid file</td></tr>";
+      } else {
+        fetch("../../files.json")
+          .then((res) => res.json())
+          .then((files) => {
+            const file = files.find((f) => f.name === filename);
+            if (!file) {
+              previewBody.innerHTML =
+                "<tr><td colspan='2'>File not found</td></tr>";
+              return;
+            }
+
+            const typeIcon = typeIcons[file.type] || "";
+            const statusIcon = statusIcons[file.status] || "";
+            const copyIcon = actionIcons.Copy;
+            const infoIcon = actionIcons.Info;
+            const downloadURL = `../../${file.download}`;
+            const absoluteURL = new URL(downloadURL, location.origin).href;
+            const description =
+              file.description?.trim() || "No description provided.";
+
+            previewBody.innerHTML = `
+              <tr>
+                <td><strong>Name</strong></td>
+                <td>${file.name}</td>
+              </tr>
+              <tr>
+                <td><strong>Type</strong></td>
+                <td>${file.type}</td>
+              </tr>
+              <tr>
+                <td><strong>Status</strong></td>
+                <td><img class="icon" src="${statusIcon}" />${file.status}</td>
+              </tr>
+              <tr>
+                <td><strong>Size</strong></td>
+                <td>${file.size}</td>
+              </tr>
+              <tr>
+                <td><strong>Download</strong></td>
+                <td>
+                  <a class="download-link" href="${downloadURL}" download>
+                    <img class="icon" src="${typeIcon}" />⭳ Download (${file.name})
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Copy URL</strong></td>
+                <td>
+                  <img class="copy-icon" src="${copyIcon}" title="Copy download URL" onclick="copyToClipboard('${absoluteURL}')">
+                  <span id="copyStatus" class="copied" style="display: none;">✔ Copied</span>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Information</strong></td>
+                <td><img class="icon" src="${infoIcon}" />${description}</td>
+              </tr>
+            `;
+          });
+      }
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const status = document.getElementById("copyStatus");
+          status.style.display = "inline";
+          setTimeout(() => {
+            status.style.display = "none";
+          }, 1500);
+        });
+      }
+    </script>
+  </body>
+</html>

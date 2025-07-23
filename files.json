@@ -1,0 +1,17 @@
+[
+  {
+    "name": "mix2024.mp3",
+    "type": "Audio",
+    "status": "Active",
+    "size": "13 MB",
+    "download": "downloads/mix2024.mp3",
+    "description": "2024 unreleased house mix from vault archive"
+  },
+  {
+    "name": "unknown.zip",
+    "type": "Zip",
+    "status": "Restricted",
+    "size": "49 MB",
+    "download": "downloads/unknown.zip"
+  }
+]
